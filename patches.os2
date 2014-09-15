@@ -1,0 +1,160 @@
+Only in new: isvalid.c
+diff -cb orig/main.c new/main.c
+*** orig/main.c	Sun Sep 09 22:05:09 1990
+--- new/main.c	Sun Jun 07 14:27:17 1992
+***************
+*** 1,6 ****
+--- 1,9 ----
+  #include <signal.h>
++ #include <string.h>
+  #include "defs.h"
+  
++ extern char *banner[];
++ 
+  char dflag;
+  char lflag;
+  char rflag;
+***************
+*** 9,15 ****
+  
+  char *file_prefix = "y";
+  char *myname = "yacc";
+! char *temp_form = "yacc.XXXXXXX";
+  
+  int lineno;
+  int outline;
+--- 12,18 ----
+  
+  char *file_prefix = "y";
+  char *myname = "yacc";
+! char *temp_form = "y_XXXXXX";
+  
+  int lineno;
+  int outline;
+***************
+*** 70,76 ****
+  }
+  
+  
+! onintr()
+  {
+      done(1);
+  }
+--- 73,79 ----
+  }
+  
+  
+! void onintr()
+  {
+      done(1);
+  }
+***************
+*** 95,101 ****
+  
+  usage()
+  {
+!     fprintf(stderr, "usage: %s [-dlrtv] [-b file_prefix] filename\n", myname);
+      exit(1);
+  }
+  
+--- 98,114 ----
+  
+  usage()
+  {
+!     char *version = strchr(banner[1], '@') + 12;
+!     fprintf(stderr, "\nYacc %s\n", version);
+!     fprintf(stderr, "\nUsage: %s [-dlrtv] [-b file_prefix] filename\n", 
+! 	    myname);
+!     fprintf(stderr, "\n\t-d\twrite the header file \"y.tab.h\""
+!        "\n\t-l\texclude the #line directives in files"
+!        "\n\t-r\tseperate code and tables into \"y.code.c\" and \"y.tab.c\""
+!        "\n\t-t\tinclude the debugging code in files"
+!        "\n\t-v\twrite the parser description file \"y.output\"\n"
+!        "\n\t-b file_prefix\tchange the default file prefix \"y.\"\n");
+! 
+      exit(1);
+  }
+  
+***************
+*** 218,224 ****
+      char *tmpdir;
+  
+      tmpdir = getenv("TMPDIR");
+!     if (tmpdir == 0) tmpdir = "/tmp";
+  
+      len = strlen(tmpdir);
+      i = len + 13;
+--- 231,238 ----
+      char *tmpdir;
+  
+      tmpdir = getenv("TMPDIR");
+!     if (tmpdir == 0) tmpdir = getenv("TMP");
+!     if (tmpdir == 0) tmpdir = "/";
+  
+      len = strlen(tmpdir);
+      i = len + 13;
+***************
+*** 248,256 ****
+      strcpy(text_file_name + len, temp_form);
+      strcpy(union_file_name + len, temp_form);
+  
+!     action_file_name[len + 5] = 'a';
+!     text_file_name[len + 5] = 't';
+!     union_file_name[len + 5] = 'u';
+  
+      mktemp(action_file_name);
+      mktemp(text_file_name);
+--- 262,270 ----
+      strcpy(text_file_name + len, temp_form);
+      strcpy(union_file_name + len, temp_form);
+  
+!     action_file_name[len + 1] = 'a';
+!     text_file_name[len + 1] = 't';
+!     union_file_name[len + 1] = 'u';
+  
+      mktemp(action_file_name);
+      mktemp(text_file_name);
+***************
+*** 263,268 ****
+--- 277,284 ----
+  	no_space();
+      strcpy(output_file_name, file_prefix);
+      strcpy(output_file_name + len, OUTPUT_SUFFIX);
++     if (!IsFileNameValid(output_file_name))
++         ChangeNameForFAT(output_file_name);
+  
+      if (rflag)
+      {
+***************
+*** 271,276 ****
+--- 287,294 ----
+  	    no_space();
+  	strcpy(code_file_name, file_prefix);
+  	strcpy(code_file_name + len, CODE_SUFFIX);
++ 	if (!IsFileNameValid(code_file_name))
++ 	    ChangeNameForFAT(code_file_name);
+      }
+      else
+  	code_file_name = output_file_name;
+***************
+*** 282,287 ****
+--- 300,307 ----
+  	    no_space();
+  	strcpy(defines_file_name, file_prefix);
+  	strcpy(defines_file_name + len, DEFINES_SUFFIX);
++ 	if (!IsFileNameValid(defines_file_name))
++ 	    ChangeNameForFAT(defines_file_name);
+      }
+  
+      if (vflag)
+***************
+*** 291,296 ****
+--- 311,318 ----
+  	    no_space();
+  	strcpy(verbose_file_name, file_prefix);
+  	strcpy(verbose_file_name + len, VERBOSE_SUFFIX);
++ 	if (!IsFileNameValid(verbose_file_name))
++ 	    ChangeNameForFAT(verbose_file_name);
+      }
+  }
+  
